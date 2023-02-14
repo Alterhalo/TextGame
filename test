@@ -1,28 +1,44 @@
 # data setup
 rooms = {
-    'empty': {
-        'name': 'an empty room', 
-        'east': 'bedroom', 
-        'north': 'temple',
-        'text': 'The stone floors and walls and cold and damp.'},
+  'empty': {
+    'name': 'an empty room', 
+    'east': 'bedroom', 
+    'north': 'temple', 
+    'contents': [],
+    'monster': [],
+        'text': 'The stone floors and walls are cold and damp. All you can remember is you are looking for your father'},
     'temple': {
-        'name': 'a small temple', 
-        'east': 'torture', 
-        'south': 'empty',
-        'text': 'There are three rows of benches facing a small statue.'},
+      'name': 'a small temple', 
+      'east': 'torture', 
+      'south': 'empty',
+      'monster': [],
+        'text': 'This seems to be a place of worship and deep contemplation.\n why are we here?', 
+        'contents': ['bench', 'bench', 'bench', 'statue']},
     'torture': {
-        'name': 'a torture chamber', 
-        'west': 'temple', 
-        'south': 'bedroom',
-        'text': 'There is a rack and an iron maiden against the wall\nand some chains and thumbscrews on the floor.'},
+      'name': 'a torture chamber', 
+      'west': 'temple', 
+      'south': 'bedroom',
+      'monster': [],
+      'contents': ['chains', 'thumbscrews','knife'],
+        'text': 'There is a rack and an iron maiden against the wall\naand some dark stains on the floor.'},
     'bedroom': {
-        'name': 'a bedroom', 
-        'north': 'torture', 
-        'west': 'empty',
-        'text': 'There is a large bed with black, silk sheets on it.'}
-    }
+      'name': 'a bedroom', 
+      'north': 'torture', 
+      'west': 'dimroom',
+      'monster': [],
+      'contents': ['sheets', 'bed'],
+        'text': 'This is clearly a bedroom, but no one has slept\nhere in a long time.'},
+    'dimroom': {
+      'name': 'a dim lit room', 
+      'east': 'bedroom', 
+      'west': 'death', 
+      'contents': [],
+      'monster': ['Goblin'],
+        'text': 'You see a Goblin in the room you must fight or flee'}
+}
 directions = ['north', 'south', 'east', 'west']
 current_room = rooms['empty']
+battle = ['fight', 'flee']
 carrying = []
  
 # game loop
@@ -34,6 +50,9 @@ while True:
     # display movable objects
     if current_room['contents']:
         print('In the room are: {}'.format(', '.join(current_room['contents'])))
+    # display monsters
+    if current_room['monster']:
+      print('In the room are: {}'.format(', '.join(current_room['monster'])))
     # get user input
     command = input('\nWhat do you do? ').strip()
     # movement
