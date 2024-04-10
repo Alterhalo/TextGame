@@ -1,0 +1,336 @@
+import random
+
+class Player:
+    def __init__(self, name, level=1, health=100, gold=0, experience=0):
+        self.name = name
+        self.level = level
+        if name.lower() == "osei":
+            self.health = 1
+        else:
+            self.health = health
+        self.inventory = []
+        self.gold = gold
+        self.experience = experience
+        self.strength = 10
+        self.dexterity = 10
+        self.constitution = 10
+        self.intelligence = 10
+        self.wisdom = 10
+        self.charisma = 10
+        self.equipped_weapon = None
+        self.equipped_armor = None
+
+    def take_damage(self, damage):
+        self.health -= damage
+
+    def heal(self, amount):
+        self.health += amount
+
+    def is_alive(self):
+        return self.health > 0
+
+    def add_to_inventory(self, item):
+        self.inventory.append(item)
+
+    def remove_from_inventory(self, item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+
+    def equip_weapon(self, weapon):
+        if weapon in self.inventory:
+            self.equipped_weapon = weapon
+            print(f"You equip the {weapon.name}.")
+            self.strength += weapon.strength_bonus
+            self.dexterity += weapon.dexterity_bonus
+            self.constitution += weapon.constitution_bonus
+            self.intelligence += weapon.intelligence_bonus
+            self.wisdom += weapon.wisdom_bonus
+            self.charisma += weapon.charisma_bonus
+        else:
+            print("You don't have that item.")
+
+    def equip_armor(self, armor):
+        if armor in self.inventory:
+            self.equipped_armor = armor
+            print(f"You equip the {armor.name}.")
+            self.strength += armor.strength_bonus
+            self.dexterity += armor.dexterity_bonus
+            self.constitution += armor.constitution_bonus
+            self.intelligence += armor.intelligence_bonus
+            self.wisdom += armor.wisdom_bonus
+            self.charisma += armor.charisma_bonus
+        else:
+            print("You don't have that item.")
+
+    def print_inventory(self):
+        if self.inventory:
+            print("Inventory:")
+            for item in self.inventory:
+                print("-", item.name)
+        else:
+            print("Your inventory is empty.")
+        print("Gold:", self.gold)
+
+    def print_equipment(self):
+        print("Equipment:")
+        print("- Weapon:", self.equipped_weapon.name if self.equipped_weapon else "None")
+        print("- Armor:", self.equipped_armor.name if self.equipped_armor else "None")
+
+    def print_stats(self):
+        print("Level:", self.level)
+        print("Health:", self.health)
+        print("Strength:", self.strength)
+        print("Dexterity:", self.dexterity)
+        print("Constitution:", self.constitution)
+        print("Intelligence:", self.intelligence)
+        print("Wisdom:", self.wisdom)
+        print("Charisma:", self.charisma)
+        print("Experience:", self.experience)
+        print("Experience needed for next level:", self.level * 100)
+
+    def gain_experience(self, experience):
+        self.experience += experience
+        if self.experience >= self.level * 100:
+            self.level_up()
+
+    def level_up(self):
+        self.level += 1
+        self.experience = 0
+        self.health += 20  # Increase health by 20 each level up
+        self.strength += 5  # Increase strength by 5 each level up
+        self.dexterity += 5  # Increase dexterity by 5 each level up
+        self.constitution += 5  # Increase constitution by 5 each level up
+        self.intelligence += 5  # Increase intelligence by 5 each level up
+        self.wisdom += 5  # Increase wisdom by 5 each level up
+        self.charisma += 5  # Increase charisma by 5 each level up
+        print("Congratulations! You leveled up to level", self.level)
+
+class Enemy:
+    def __init__(self, name, level, health, damage, experience, drop_gold=False, drop_equipment=False):
+        self.name = name
+        self.level = level
+        self.health = health
+        self.damage = damage
+        self.experience = experience
+        self.drop_gold = drop_gold
+        self.drop_equipment = drop_equipment
+
+    def take_damage(self, damage):
+        self.health -= damage
+
+    def attack(self):
+        return random.randint(1, self.damage)
+
+    def is_alive(self):
+        return self.health > 0
+
+    def drop_loot(self):
+        loot = []
+        if self.drop_gold:
+            gold_amount = random.randint(10, 50)
+            loot.append(f"{gold_amount} gold")
+        if self.drop_equipment:
+            equipment = random.choice(["Sword", "Armor"])
+            loot.append(equipment)
+        return loot
+
+class Item:
+    def __init__(self, name, strength_bonus=0, dexterity_bonus=0, constitution_bonus=0, intelligence_bonus=0, wisdom_bonus=0, charisma_bonus=0, level_requirement=1):
+        self.name = name
+        self.strength_bonus = strength_bonus
+        self.dexterity_bonus = dexterity_bonus
+        self.constitution_bonus = constitution_bonus
+        self.intelligence_bonus = intelligence_bonus
+        self.wisdom_bonus = wisdom_bonus
+        self.charisma_bonus = charisma_bonus
+        self.level_requirement = level_requirement
+
+    def use(self, player):
+        print(f"You use the {self.name}.")
+        if self.name == "Health Potion":
+            player.heal(20)
+            print("You feel better!")
+        elif self.name == "Sword":
+            player.equip_weapon(self)
+        elif self.name == "Armor":
+            player.equip_armor(self)
+
+class Shopkeeper:
+    def __init__(self):
+        self.inventory = [Item("Health Potion"), Item("Sword", strength_bonus=3, level_requirement=1), Item("Armor", constitution_bonus=5, level_requirement=1)]
+
+    def print_inventory(self):
+        print("Shop Inventory:")
+        for idx, item in enumerate(self.inventory, 1):
+            print(f"{idx}. {item.name}")
+
+    def sell_item(self, player, item_index):
+        if item_index < 1 or item_index > len(self.inventory):
+            print("Invalid item index.")
+            return
+        item_to_sell = self.inventory[item_index - 1]
+        if player.gold >= 10:
+            player.gold -= 10
+            player.add_to_inventory(item_to_sell)
+            print(f"You bought {item_to_sell.name} for 10 gold.")
+            del self.inventory[item_index - 1]
+        else:
+            print("Not enough gold to buy the item.")
+
+    def sell_equipment(self, player):
+        print("Equipment for sale:")
+        for idx, item in enumerate(self.inventory, 1):
+            if item.name == "Sword" or item.name == "Armor":
+                print(f"{idx}. {item.name}")
+        buy_choice = input("Enter the index of the item you want to buy (0 to exit): ")
+        if buy_choice.isdigit():
+            buy_choice = int(buy_choice)
+            if buy_choice == 0:
+                return
+            item_to_sell = self.inventory[buy_choice - 1]
+            if player.gold >= 10:
+                player.gold -= 10
+                player.add_to_inventory(item_to_sell)
+                print(f"You bought {item_to_sell.name} for 10 gold.")
+                del self.inventory[buy_choice - 1]
+            else:
+                print("Not enough gold to buy the item.")
+        else:
+            print("Invalid choice. Try again.")
+
+def combat(player, enemy):
+    print(f"A wild {enemy.name} appears!")
+    while player.is_alive() and enemy.is_alive():
+        print(f"{player.name} Health: {player.health}")
+        print(f"{enemy.name} Health: {enemy.health}")
+        print("1. Attack")
+        print("2. Run")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            player_damage = random.randint(1, 10) + player.strength
+            print(f"You attack the {enemy.name} for {player_damage} damage!")
+            enemy.take_damage(player_damage)
+            if not enemy.is_alive():
+                print(f"You defeated the {enemy.name}!")
+                player.gain_experience(enemy.experience)
+                player.heal(10)
+                player.gold += random.randint(10, 20)
+                loot = enemy.drop_loot()
+                if loot:
+                    print(f"The {enemy.name} dropped the following loot: {', '.join(loot)}")
+                    for item in loot:
+                        if item == "Sword":
+                            player.add_to_inventory(Item("Sword", strength_bonus=3 + player.level, level_requirement=player.level))
+                        elif item == "Armor":
+                            player.add_to_inventory(Item("Armor", constitution_bonus=5 + player.level, level_requirement=player.level))
+                        elif "gold" in item:
+                            amount = int(item.split()[0])
+                            player.gold += amount
+                return True
+            enemy_damage = enemy.attack()
+            print(f"The {enemy.name} attacks you for {enemy_damage} damage!")
+            player.take_damage(enemy_damage)
+            if not player.is_alive():
+                print("Game over! You have been defeated.")
+                return False
+        elif choice == "2":
+            escape_chance = random.randint(1, 10)
+            if escape_chance <= 5:
+                print("You successfully escaped from the battle yo.")
+                return False
+            else:
+                print("You failed to escape! :/")
+        else:
+            print("Invalid choice. Try again. :/")
+
+def main():
+    print("Welcome to the THUNDERDOME!")
+    name = input("Enter your name: ")
+    player = Player(name)
+    shopkeeper = Shopkeeper()
+    while True:
+        print("\nYou are in a forest. What do you want to do?")
+        print("1. Explore")
+        print("2. Visit Shop")
+        print("3. Check inventory")
+        print("4. Check equipment")
+        print("5. Check stats")
+        print("6. Quit")
+        choice = input("Enter your choice: ")
+        if choice == "1":
+            encounter = random.randint(1, 10)
+            if encounter <= 4:
+                enemy_level = player.level + random.randint(-1, 1)
+                if enemy_level < 1:
+                    enemy_level = 1
+                enemy_health = 50 + 10 * enemy_level
+                enemy_damage = 8 + 2 * enemy_level
+                enemy_experience = 20 + 10 * enemy_level
+                enemy = Enemy("Goblin", enemy_level, enemy_health, enemy_damage, enemy_experience, drop_gold=True, drop_equipment=True)
+            elif encounter <= 7:
+                enemy_level = player.level + random.randint(-1, 1)
+                if enemy_level < 1:
+                    enemy_level = 1
+                enemy_health = 70 + 15 * enemy_level
+                enemy_damage = 10 + 3 * enemy_level
+                enemy_experience = 30 + 15 * enemy_level
+                enemy = Enemy("Orc", enemy_level, enemy_health, enemy_damage, enemy_experience, drop_gold=True, drop_equipment=True)
+            elif encounter <= 9:
+                enemy_level = player.level + random.randint(-1, 1)
+                if enemy_level < 1:
+                    enemy_level = 1
+                enemy_health = 40 + 5 * enemy_level
+                enemy_damage = 6 + 2 * enemy_level
+                enemy_experience = 15 + 5 * enemy_level
+                enemy = Enemy("Wolf", enemy_level, enemy_health, enemy_damage, enemy_experience, drop_gold=True, drop_equipment=True)
+            elif encounter == 10:
+                enemy_level = player.level + random.randint(-1, 1)
+                if enemy_level < 1:
+                    enemy_level = 1
+                enemy_health = 200 + 30 * enemy_level
+                enemy_damage = 5 + 2 * enemy_level
+                enemy_experience = 80 + 25 * enemy_level
+                enemy = Enemy("Nikeena", enemy_level, enemy_health, enemy_damage, enemy_experience, drop_gold=True, drop_equipment=False)
+            else:
+                enemy_level = player.level + random.randint(-1, 1)
+                if enemy_level < 1:
+                    enemy_level = 1
+                enemy_health = 100 + 20 * enemy_level
+                enemy_damage = 15 + 5 * enemy_level
+                enemy_experience = 50 + 25 * enemy_level
+                enemy = Enemy("Dragon", enemy_level, enemy_health, enemy_damage, enemy_experience, drop_gold=True, drop_equipment=True)
+
+            if not combat(player, enemy):
+                continue
+        elif choice == "2":
+            print("1. Buy Items")
+            print("2. Buy Equipment")
+            shop_choice = input("Enter your choice: ")
+            if shop_choice == "1":
+                shopkeeper.print_inventory()
+                buy_choice = input("Enter the index of the item you want to buy (0 to exit): ")
+                if buy_choice.isdigit():
+                    buy_choice = int(buy_choice)
+                    if buy_choice == 0:
+                        continue
+                    shopkeeper.sell_item(player, buy_choice)
+                else:
+                    print("Invalid choice. Try again.")
+            elif shop_choice == "2":
+                shopkeeper.sell_equipment(player)
+            else:
+                print("Invalid choice. Try again.")
+        elif choice == "3":
+            player.print_inventory()
+        elif choice == "4":
+            player.print_equipment()
+        elif choice == "5":
+            player.print_stats()
+        elif choice == "6":
+            print("Thanks for playing!")
+            break
+        else:
+            print("Invalid choice. Try again.")
+
+if __name__ == "__main__":
+    main()
